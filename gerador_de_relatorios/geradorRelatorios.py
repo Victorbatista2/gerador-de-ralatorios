@@ -12,7 +12,7 @@ DB_PATH = os.getenv("DB_PATH")
 if not DB_PATH:
     raise ValueError("Banco de dados não encontrado")
 
-# SQL relatório músicas por artista
+# query SQL
 sql = """
 SELECT
     ar.Name AS artista,
