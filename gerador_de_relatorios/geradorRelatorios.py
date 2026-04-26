@@ -1,42 +1,59 @@
 import os
-import sqlite3
+import mysql.connector
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 
-# carregar .env
+
 load_dotenv()
 
-DB_PATH = os.getenv("DB_PATH")
+host = os.getenv("DB_HOST")
+port = os.getenv("DB_PORT")
+user = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+database = os.getenv("DB_NAME")
 
-if not DB_PATH:
-    raise ValueError("Banco de dados não encontrado")
+conexao = mysql.connector.connect(
+    host=host,
+    port=port,
+    user=user,
+    password=password,
+    database=database
+)
+
+if not all([host, port, user, password, database]):
+    raise ValueError("conexão com o banco de dados falhou")
 
 # query SQL
 sql = """
 SELECT
-    ar.Name AS artista,
-    COUNT(t.TrackId) AS total_musicas
-FROM Artist ar
-JOIN Album al ON al.ArtistId = ar.ArtistId
-JOIN Track t ON t.AlbumId = al.AlbumId
-GROUP BY ar.ArtistId
-ORDER BY total_musicas DESC
-LIMIT 20;
+    transaction_id,
+    user_id,
+    transaction_date,
+    product_category,
+    product_name,
+    merchant_name,
+    product_amount,
+    transaction_fee,
+    cashback,
+    loyalty_points,
+    payment_method,
+    transaction_status,
+    merchant_id,
+    device_type,
+    location
+FROM digital_wallet_transactions;
 """
 
-# conectar
-con = sqlite3.connect(DB_PATH)
-
 # executar
-df = pd.read_sql_query(sql, con)
+df = pd.read_sql_query(sql, conexao)
 
-con.close()
+conexao.close()
 
 # salvar relatório
 stamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-df.to_excel(f"relatorio_musicas_por_artista_{stamp}.xlsx", index=False)
-df.to_csv(f"relatorio_musicas_por_artista_{stamp}.csv", index=False, encoding="utf-8")
+df.to_excel(f"relatorio_wallet_analytics_{stamp}.xlsx", index=False)
+df.to_csv(f"relatorio_wallet_analytics_{stamp}.csv", index=False, encoding="utf-8")
 
 print("\nRelatório gerado com sucesso.")
