@@ -22,7 +22,7 @@ conexao = mysql.connector.connect(
 )
 
 if not all([host, port, user, password, database]):
-    raise ValueError("conexão com o banco de dados falhou")
+    raise ValueError("conexão com o banco falhou")
 
 # query SQL
 sql = """
@@ -48,7 +48,24 @@ FROM digital_wallet_transactions;
 # executar
 df = pd.read_sql_query(sql, conexao)
 
+
+#tratamento de dados
+colunas_numericas = ["product_amount", "transaction_fee", "cashback", "loyalty_points"]
+
+for coluna in colunas_numericas:
+    df[coluna] = pd.to_numeric(df[coluna], errors="coerce")
+
+
+df = df.dropna()
+df = df.drop_duplicates(subset=["transaction_id"])
+
+
+df["product_amount"] = df["product_amount"].round(2)
+df["transaction_fee"] = df["transaction_fee"].round(2)
+df["cashback"] = df["cashback"].round(2)
+
 conexao.close()
+
 
 # salvar relatório
 stamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
