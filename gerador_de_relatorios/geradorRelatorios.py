@@ -26,30 +26,13 @@ if not all([host, port, user, password, database]):
 
 # query SQL
 sql = """
-SELECT
-    transaction_id,
-    user_id,
-    transaction_date,
-    product_category,
-    product_name,
-    merchant_name,
-    product_amount,
-    transaction_fee,
-    cashback,
-    loyalty_points,
-    payment_method,
-    transaction_status,
-    merchant_id,
-    device_type,
-    location
-FROM digital_wallet_transactions;
+SELECT * FROM digital_wallet_transactions;
 """
 
-# executar
 df = pd.read_sql_query(sql, conexao)
 
 
-#tratamento de dados
+#tratamento 
 colunas_numericas = ["product_amount", "transaction_fee", "cashback", "loyalty_points"]
 
 for coluna in colunas_numericas:
@@ -67,7 +50,7 @@ df["cashback"] = df["cashback"].round(2)
 conexao.close()
 
 
-# salvar relatório
+#salvar relatório
 stamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
 df.to_excel(f"relatorio_wallet_analytics_{stamp}.xlsx", index=False)
